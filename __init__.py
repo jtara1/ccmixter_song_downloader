@@ -1,1 +1,1 @@
-from download_music import CCMixterSongDownloader
+from CCMixterSongDownloader.download_music import CCMixterSongDownloader
