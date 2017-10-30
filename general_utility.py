@@ -1,5 +1,6 @@
 import unicodedata
 import re
+import os
 
 
 def slugify(value):
@@ -12,3 +13,11 @@ def slugify(value):
     value = str(re.sub(r'[^\w\s.]', '', value.decode('ascii')).strip())
     # value = re.sub(r'[-\s]+', '-', value.decode('ascii')) # not replacing space with hyphen
     return value
+
+
+def create_directories_if_needed(path, is_file=True):
+    path = os.path.abspath(path)
+    if is_file:
+        path = os.path.dirname(path)
+    if not os.path.isdir(path):
+        os.makedirs(path)

@@ -28,7 +28,10 @@ class History:
             'append': 'a'
         }
         if mode in mode_dict:
-            with open(os.path.join(wdir, log_file), mode_dict[mode]) as f:
+            log_file_path = os.path.join(wdir, log_file)
+            History.create_directories_if_needed(log_file_path)
+
+            with open(log_file_path, mode_dict[mode]) as f:
                 if mode == 'read':
                     return json.loads(f.read())
                 else:
@@ -105,3 +108,17 @@ class History:
                                            log_data)
 
         return log_data, last_id
+
+    @staticmethod
+    def create_directories_if_needed(path, is_file=True):
+        """Creates the directories leading to the path if they don't exist
+
+        :param path: file path of a folder or file
+        :param is_file: should be True if path points to file, False otherwise
+        :return:
+        """
+        path = os.path.abspath(path)
+        if is_file:
+            path = os.path.dirname(path)
+        if not os.path.isdir(path):
+            os.makedirs(path)
