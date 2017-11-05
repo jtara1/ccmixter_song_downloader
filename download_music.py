@@ -130,4 +130,4 @@ class CCMixterSongDownloader:
 if __name__ == '__main__':
     # test
     dl = CCMixterSongDownloader()
-    dl.download('test')
+    dl.download('tmp_downloads')

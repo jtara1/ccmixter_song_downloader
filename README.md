@@ -13,4 +13,4 @@ bare necessities for my needs.
 ## Run
 
 Check the docstrings
-- use `CCMixterSongDownloader.download(...)`
+- use `CCMixterSongDownloader().download(...)`
