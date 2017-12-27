@@ -8,8 +8,8 @@ try:  # python 3
 except ImportError:  # python 2
     from urllib import quote, unquote
 
-from CCMixterSongDownloader.download_history_manager import History
-from CCMixterSongDownloader.general_utility import slugify
+from ccmixter_song_downloader.download_history_manager import History
+from ccmixter_song_downloader.general_utility import slugify
 
 
 class CCMixterSongDownloader:

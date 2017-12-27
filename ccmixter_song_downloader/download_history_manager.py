@@ -55,7 +55,7 @@ class History:
         :return: log_data (contains last ids), last_id
         :rtype: tuple
 
-        Note: this has been modified to work with CCMixterSongDownloader
+        Note: this has been modified to work with ccmixter_song_downloader
         """
         no_history = False
         try:
