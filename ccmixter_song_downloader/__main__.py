@@ -1,14 +1,13 @@
 import requests
 from bs4 import BeautifulSoup
 import os
-import threading
 
 try:  # python 3
     from urllib.parse import quote, unquote
 except ImportError:  # python 2
     from urllib import quote, unquote
 
-from ccmixter_song_downloader.download_history_manager import History
+from ccmixter_song_downloader.history_manager import History
 from ccmixter_song_downloader.general_utility import slugify
 
 
@@ -20,7 +19,6 @@ class CCMixterSongDownloader:
                    'sinced=1/1/2003&ord={reversed}'
 
     def __init__(self):
-        self.a_download_completed = threading.Event()
         # e.g.: {'song': 's name', 'artist': 'john', 'website': 'ccMixter.org'
         # 'file': '/home/user/s\ name.mp3'}
         self.download_info = []
@@ -54,6 +52,7 @@ class CCMixterSongDownloader:
         response = requests.get(query_url)
         soup = BeautifulSoup(response.text, 'lxml')
 
+        count = 0
         # iterate over the HTML <div> tag that contains the direct link to .mp3
         for count, tag in enumerate(
                 soup.find_all('div', attrs={'class': 'upload_info'}),
@@ -63,12 +62,19 @@ class CCMixterSongDownloader:
             if count >= limit:
                 break
 
-            print(tag['about'])
             file_name = tag['about']
-            # convert URL text elements (%2D -> '-') and make it valid file name
-            file_name = slugify(unquote(file_name))
+            # avoid downloading zip files
+            if file_name.endswith('.zip'):
+                limit += 1
+                continue
 
+            # convert URL text elements (%2D -> '-')
+            # and make it valid file name
+            file_name = slugify(unquote(file_name))
             save_path = os.path.join(save_folder, file_name)
+            print('[CCMixterSongDownloader] Saving: {} as {}'
+                  .format(tag['about'], save_path))
+
             # download the song
             CCMixterSongDownloader._direct_link_download(
                 tag['about'].strip(),
@@ -77,6 +83,10 @@ class CCMixterSongDownloader:
             # keep info of the song
             self._get_info_from_tag(tag)
             self.download_info[-1]['file_path'] = save_folder
+
+        if count + 1 < limit:
+            print('[CCMixterSongDownloader] WARNING: Downloaded {} songs when '
+                  'limit = {}'.format(count, limit))
 
         log_file_path = os.path.join(save_folder, History.log_file)
         History.history_log(log_file=log_file_path,
@@ -126,6 +136,7 @@ class CCMixterSongDownloader:
         e.g.: {'classical+hip_hop': {'date': {'downloads': 10}}}
         """
         return {tags: {sort: {'downloads': downloads}}}
+
 
 if __name__ == '__main__':
     # test

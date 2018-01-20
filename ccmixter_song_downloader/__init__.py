@@ -1,2 +1,2 @@
-from ccmixter_song_downloader.download_music import \
+from ccmixter_song_downloader.__main__ import \
     CCMixterSongDownloader

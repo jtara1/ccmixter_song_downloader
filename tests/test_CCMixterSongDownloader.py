@@ -1,7 +1,7 @@
 import os
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from ccmixter_song_downloader.download_music import CCMixterSongDownloader
+from ccmixter_song_downloader.__main__ import CCMixterSongDownloader
 
 
 downloads_folder = os.path.join(os.path.dirname(__file__), 'tmp_dl')
