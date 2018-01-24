@@ -3,6 +3,7 @@ import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from ccmixter_song_downloader.__main__ import CCMixterSongDownloader
 
+from pprint import pprint
 
 downloads_folder = os.path.join(os.path.dirname(__file__), 'tmp_dl')
 
@@ -25,6 +26,6 @@ def teardown_function(function):
 @setup_function
 def test_case1():
     dl = CCMixterSongDownloader()
-    dl.download(save_folder=downloads_folder, tags='classical', limit=1)
-    print(dl.download_info)
+    dl.download(save_folder=downloads_folder, tags='', limit=1)
+    pprint(dl.download_info)
     assert len(os.listdir(downloads_folder)) == 2  # .mp3 & history text file

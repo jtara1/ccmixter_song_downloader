@@ -28,11 +28,11 @@ class CCMixterSongDownloader:
         """Downloads songs from ccMixter and saves them
 
         :param save_folder: location of saved music files
-        :param tags: (string) in url, tags of songs used as a filter
-        :param sort: (string) in url, sort type used to filter songs
-        :param limit: (int) amount of songs to download before stopping
-        :param skip_previous_songs: (boolean) if true, checks for previous
-            queries made and skips the amount downloaded (as offset in url
+        :param tags: <string> in url, tags of songs used as a filter
+        :param sort: <string> in url, sort type used to filter songs
+        :param limit: <int> amount of songs to download before stopping
+        :param skip_previous_songs: <boolean> if true, checks for previous \n
+            queries made and skips the amount downloaded (as offset in url \n
             query filter).
         :return:
         """
@@ -64,7 +64,7 @@ class CCMixterSongDownloader:
 
             file_name = tag['about']
             # avoid downloading zip files
-            if file_name.endswith('.zip'):
+            if file_name.endswith(('.zip', '.zip ')):
                 limit += 1
                 continue
 
