@@ -27,5 +27,5 @@ def teardown_function(function):
 def test_case1():
     dl = CCMixterSongDownloader()
     dl.download(save_folder=downloads_folder, tags='', limit=1)
-    pprint(dl.download_info)
+    pprint(dl.songs_metadata)
     assert len(os.listdir(downloads_folder)) == 2  # .mp3 & history text file

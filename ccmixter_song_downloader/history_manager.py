@@ -4,7 +4,7 @@ import json
 
 
 class History:
-    log_file = '._history.json'
+    log_file = '._ccmixter_song_downloader_history.json'
 
     @staticmethod
     def history_log(wdir=os.getcwd(), log_file='log_file.txt',

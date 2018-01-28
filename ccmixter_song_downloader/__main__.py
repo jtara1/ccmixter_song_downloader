@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import os
+import get_media_files
 
 try:  # python 3
     from urllib.parse import quote, unquote
@@ -9,6 +10,7 @@ except ImportError:  # python 2
 
 from ccmixter_song_downloader.history_manager import History
 from ccmixter_song_downloader.general_utility import slugify
+from ccmixter_song_downloader.metadata import SongMetadata
 
 
 class CCMixterSongDownloader:
@@ -21,7 +23,7 @@ class CCMixterSongDownloader:
     def __init__(self):
         # e.g.: {'song': 's name', 'artist': 'john', 'website': 'ccMixter.org'
         # 'file': '/home/user/s\ name.mp3'}
-        self.download_info = []
+        self.songs_metadata = []
 
     def download(self, save_folder, tags='classical', sort='date', limit=1,
                  reversed=False, skip_previous_songs=True):
@@ -80,9 +82,16 @@ class CCMixterSongDownloader:
                 tag['about'].strip(),
                 save_path)
 
+            # get length of song
+            song_media = get_media_files.GetMediaFiles(save_path)
+            length = song_media.files[0][1]['Audio']['duration'] / 1000
+
             # keep info of the song
-            self._get_info_from_tag(tag)
-            self.download_info[-1]['file_path'] = save_folder
+            artist, song, link = self._get_info_from_tag(tag)
+            metadata = SongMetadata(length=length, artist=artist, name=song,
+                                    link=link)
+            self.songs_metadata.append(metadata)
+
 
         if count + 1 < limit:
             print('[CCMixterSongDownloader] WARNING: Downloaded {} songs when '
@@ -102,11 +111,12 @@ class CCMixterSongDownloader:
         :param tag: (bs4 Tag object) the HTML tag with class='upload_info'
         """
         title_tag = tag.find('a', attrs={'property': 'dc:title'})
-        website = title_tag['href']
+        link = title_tag['href']
         song = title_tag.text
         artist = tag.find('a', attrs={'property': 'dc:creator'}).text
-        self.download_info.append({'website': website, 'song': song,
-                                   'artist': artist})
+        return artist, song, link
+        # self.download_info.append({'website': link, 'song': song,
+        #                            'artist': artist})
 
     @staticmethod
     def _direct_link_download(url, full_save_path):
