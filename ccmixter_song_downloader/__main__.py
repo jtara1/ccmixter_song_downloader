@@ -64,10 +64,11 @@ class CCMixterSongDownloader:
         save_folder = os.path.abspath(save_folder)
 
         if not skip_previous_songs:
+            history_data = {}
             offset = 0
         else:
-            _, offset = History.get_previous_download_amount(tags, sort,
-                                                             save_folder)
+            history_data, offset = History.get_previous_download_amount(
+                tags, sort, save_folder)
 
         query_url = self.url_template.format(
             tags=tags, sort=sort, limit=limit, offset=offset,
@@ -125,7 +126,7 @@ class CCMixterSongDownloader:
         History.history_log(log_file=log_file_path,
                             mode='write',
                             write_data=self._create_history_log_info(
-                                tags, sort, limit))
+                                history_data, tags, sort, limit))
 
     def _parse_info_from_tag(self, tag):
         """Extracts info about the song from the HTML tag (with
@@ -168,12 +169,13 @@ class CCMixterSongDownloader:
             return 0
 
     @staticmethod
-    def _create_history_log_info(tags, sort, downloads):
+    def _create_history_log_info(previous_history, tags, sort, downloads):
         """Info stored when downloading complete to help skip songs already
         downloaded for future calls to download method.
         e.g.: {'classical+hip_hop': {'date': {'downloads': 10}}}
         """
-        return {tags: {sort: {'downloads': downloads}}}
+        return previous_history.update(
+            {tags: {sort: {'downloads': downloads}}})
 
     @staticmethod
     def _parse_cc_license_from_url(url):
