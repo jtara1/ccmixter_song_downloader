@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import os
-from os.path import basename
+from os.path import basename, dirname
 import get_media_files
 
 try:  # python 3
@@ -22,7 +22,7 @@ class CCMixterSongDownloader:
                    'sinced=1/1/2003&ord={reverse}&lic={license}'
 
     def __init__(self):
-        """Wrapper class for creating a query for ccmixter.org to
+        """Wrapper class for creating an HTTP query for ccmixter.org to
         download songs
         Example:
             # get the 5 oldest classical CC-BY licensed songs
@@ -36,17 +36,23 @@ class CCMixterSongDownloader:
             # and download 5 songs
 
         """
-        # e.g.: {'song': 's name', 'artist': 'john', 'website': 'ccMixter.org'}
+        # at index 0 is info of 1st song downloaded, index 0 is 2nd song, etc
         self.songs_metadata = []
 
     def download(self, save_folder, tags='classical', sort='date', limit=1,
                  reverse=False, license='by', skip_previous_songs=True):
-        """Downloads songs from ccMixter and saves them
+        """Downloads songs from ccMixter and saves them. All arguments
+        exception save_folder and skip_previous_songs are used for
+        building the query
 
         :param save_folder: location of saved music files
-        :param tags: <string> in url, tags of songs used as a filter
-        :param sort: <string> in url, sort type used to filter songs
+        :param tags: <str> in url, tags of songs used as a filter
+        :param sort: <str> in url, sort type used to filter songs
         :param limit: <int> amount of songs to download before stopping
+        :param reverse: <bool> reverses the order in which the \n
+            list of songs are returned from ccmixter
+        :param license: <str> the type of matching license of songs \n
+            for query building
         :param skip_previous_songs: <boolean> if true, checks for previous \n
             queries made and skips the amount downloaded (as offset in url \n
             query filter).
@@ -101,11 +107,11 @@ class CCMixterSongDownloader:
             length = song_media.files[0][1]['Audio']['duration'] / 1000
 
             # keep info of the song
-            artist, song, link = self._get_info_from_tag(tag)
-            metadata = SongMetadata(length=length, artist=artist, name=song,
-                                    link=link)
+            artist, song, link, lic, lic_url = self._parse_info_from_tag(tag)
+            metadata = SongMetadata(
+                length=length, artist=artist, name=song, link=link,
+                license_url=lic_url, license=lic)
             self.songs_metadata.append(metadata)
-
 
         if count + 1 < limit:
             print('[CCMixterSongDownloader] WARNING: Downloaded {} songs when '
@@ -117,20 +123,24 @@ class CCMixterSongDownloader:
                             write_data=self._create_history_log_info(
                                 tags, sort, limit))
 
-    def _get_info_from_tag(self, tag):
+    def _parse_info_from_tag(self, tag):
         """Extracts info about the song from the HTML tag (with
         class='upload_info')
-        Appends the download_info attr to hold the info of the song in a dict
+        Appends the download_info attr to hold the info of
+        the song in a dict
 
-        :param tag: (bs4 Tag object) the HTML tag with class='upload_info'
+        :param tag: <bs4.element.Tag> the HTML tag with \n
+        class='upload_info'
         """
         title_tag = tag.find('a', attrs={'property': 'dc:title'})
         link = title_tag['href']
         song = title_tag.text
         artist = tag.find('a', attrs={'property': 'dc:creator'}).text
-        return artist, song, link
-        # self.download_info.append({'website': link, 'song': song,
-        #                            'artist': artist})
+        license_tag = tag.find('a', attrs={'class': 'lic_link'})
+        license_url = license_tag['href']
+
+        return artist, song, link, \
+            self._parse_cc_license_from_url(license_url), license_url
 
     @staticmethod
     def _direct_link_download(url, full_save_path):
@@ -160,6 +170,16 @@ class CCMixterSongDownloader:
         e.g.: {'classical+hip_hop': {'date': {'downloads': 10}}}
         """
         return {tags: {sort: {'downloads': downloads}}}
+
+    @staticmethod
+    def _parse_cc_license_from_url(url):
+        """url should look like
+        http://creativecommons.org/licenses/by/3.0/
+        """
+        # rm last "/" character, split by "/" characters
+        url = url[:-1].split('/')
+        number, cc_license = url[-1], url[-2]
+        return "CC {} {}".format(cc_license.upper(), number)
 
 
 if __name__ == '__main__':

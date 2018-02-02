@@ -36,9 +36,11 @@ def clean_up_old(function):
 def test_case1():
     """test_case1 = teardown_function(setup_function(test_case1)))"""
     dl = CCMixterSongDownloader()
-    dl.download(save_folder=downloads_folder, tags='', limit=2)
+    dl.download(save_folder=downloads_folder, tags='', limit=2,
+                skip_previous_songs=False)
     assert len(os.listdir(downloads_folder)) >= 2  # .mp3 & history text file
-    print([str(metadata) for metadata in dl.songs_metadata])
+    pprint([str(metadata) for metadata in dl.songs_metadata], width=68)
+    # print(dl.songs_metadata[0])
 
 
 if __name__ == '__main__':
