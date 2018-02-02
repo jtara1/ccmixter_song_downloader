@@ -37,7 +37,10 @@ class CCMixterSongDownloader:
             # and download 5 songs
 
         """
-        self.log = logging.Logger(type(self).__class__)
+        logging.basicConfig(format="%(asctime)s %(message)s",
+                            level=logging.DEBUG)
+        self.log = logging.getLogger(__class__.__name__)
+
         # at index 0 is info of 1st song downloaded, index 0 is 2nd song, etc
         self.songs_metadata = []
 
@@ -90,7 +93,8 @@ class CCMixterSongDownloader:
             file_name = tag['about']
             # avoid downloading zip files
             if file_name.endswith(('.zip', '.zip ')):
-                limit += 1
+                # limit += 1
+                count -= 1
                 continue
 
             # convert URL text elements (%2D -> '-')

@@ -43,7 +43,7 @@ def test_history_log():
     log_path = join(downloads_folder, History.log_file)
     with open(log_path, 'r') as f:
         data = json.load(f)
-    assert(data == {'': {'date': {'downloads': 4}},
+    assert(data == {'': {'date': {'downloads': 3}},
                     'rap': {'date': {'downloads': 1}}})
 
 
