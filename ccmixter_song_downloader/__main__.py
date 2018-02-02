@@ -55,7 +55,7 @@ class CCMixterSongDownloader:
             list of songs are returned from ccmixter
         :param license: <str> the type of matching license of songs \n
             for query building
-        :param skip_previous_songs: <boolean> if true, checks for previous \n
+        :param skip_previous_songs: <bool> if true, checks for previous \n
             queries made and skips the amount downloaded (as offset in url \n
             query filter).
         :return:
@@ -174,8 +174,9 @@ class CCMixterSongDownloader:
         downloaded for future calls to download method.
         e.g.: {'classical+hip_hop': {'date': {'downloads': 10}}}
         """
-        return previous_history.update(
+        previous_history.update(
             {tags: {sort: {'downloads': downloads}}})
+        return previous_history
 
     @staticmethod
     def _parse_cc_license_from_url(url):
