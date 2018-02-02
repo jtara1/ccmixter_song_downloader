@@ -15,17 +15,31 @@ def setup_function(function):
 
 
 def teardown_function(function):
-    function()
-    for file in os.listdir(downloads_folder):
-        os.remove(os.path.join(downloads_folder, file))
-    os.rmdir(downloads_folder)
-    assert True
+    def run():
+        function()
+        for file in os.listdir(downloads_folder):
+            os.remove(os.path.join(downloads_folder, file))
+        os.rmdir(downloads_folder)
+    return run
 
 
-@teardown_function
+def clean_up_old(function):
+    if os.path.isdir(downloads_folder):
+        for file in os.listdir(downloads_folder):
+            os.remove(os.path.join(downloads_folder, file))
+        os.rmdir(downloads_folder)
+    return function
+
+
 @setup_function
+@clean_up_old
 def test_case1():
+    """test_case1 = teardown_function(setup_function(test_case1)))"""
     dl = CCMixterSongDownloader()
-    dl.download(save_folder=downloads_folder, tags='', limit=1)
-    pprint(dl.songs_metadata)
-    assert len(os.listdir(downloads_folder)) == 2  # .mp3 & history text file
+    dl.download(save_folder=downloads_folder, tags='', limit=2)
+    assert len(os.listdir(downloads_folder)) >= 2  # .mp3 & history text file
+    print([str(metadata) for metadata in dl.songs_metadata])
+
+
+if __name__ == '__main__':
+    test_case1()

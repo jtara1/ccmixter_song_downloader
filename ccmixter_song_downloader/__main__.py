@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import os
+from os.path import basename
 import get_media_files
 
 try:  # python 3
@@ -18,15 +19,28 @@ class CCMixterSongDownloader:
     # check this for valid values http://ccmixter.org/query-api
     url_template = 'http://ccmixter.org/api/query?tags={tags}&sort={sort}&' \
                    'limit={limit}&offset={offset}&' \
-                   'sinced=1/1/2003&ord={reversed}'
+                   'sinced=1/1/2003&ord={reverse}&lic={license}'
 
     def __init__(self):
-        # e.g.: {'song': 's name', 'artist': 'john', 'website': 'ccMixter.org'
-        # 'file': '/home/user/s\ name.mp3'}
+        """Wrapper class for creating a query for ccmixter.org to
+        download songs
+        Example:
+            # get the 5 oldest classical CC-BY licensed songs
+            dl = CCMixterSongDownloader()
+            dl.download(
+                save_folder='downloads/', tags='classical', sort='date',
+                limit=5, reverse=True, license='by')
+
+            # the following query would then be generated
+            # http://ccmixter.org/api/query?tags=classical&limit=5&offset=0&sinced=1/1/2003&ord=ASC&lic=by
+            # and download 5 songs
+
+        """
+        # e.g.: {'song': 's name', 'artist': 'john', 'website': 'ccMixter.org'}
         self.songs_metadata = []
 
     def download(self, save_folder, tags='classical', sort='date', limit=1,
-                 reversed=False, skip_previous_songs=True):
+                 reverse=False, license='by', skip_previous_songs=True):
         """Downloads songs from ccMixter and saves them
 
         :param save_folder: location of saved music files
@@ -49,7 +63,7 @@ class CCMixterSongDownloader:
 
         query_url = self.url_template.format(
             tags=tags, sort=sort, limit=limit, offset=offset,
-            reversed='ASC' if reversed else 'DESC')
+            reverse='ASC' if reverse else 'DESC', license=license)
 
         response = requests.get(query_url)
         soup = BeautifulSoup(response.text, 'lxml')
@@ -72,7 +86,7 @@ class CCMixterSongDownloader:
 
             # convert URL text elements (%2D -> '-')
             # and make it valid file name
-            file_name = slugify(unquote(file_name))
+            file_name = slugify(basename(unquote(file_name)))
             save_path = os.path.join(save_folder, file_name)
             print('[CCMixterSongDownloader] Saving: {} as {}'
                   .format(tag['about'], save_path))
