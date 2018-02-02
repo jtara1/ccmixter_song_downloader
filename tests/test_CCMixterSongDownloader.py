@@ -32,12 +32,12 @@ def clean_up_old(function):
 
 
 @setup_function
-@clean_up_old
+# @clean_up_old
 def test_case1():
     """test_case1 = teardown_function(setup_function(test_case1)))"""
     dl = CCMixterSongDownloader()
     dl.download(save_folder=downloads_folder, tags='', limit=2,
-                skip_previous_songs=False)
+                skip_previous_songs=True)
     assert len(os.listdir(downloads_folder)) >= 2  # .mp3 & history text file
     pprint([str(metadata) for metadata in dl.songs_metadata], width=68)
     # print(dl.songs_metadata[0])

@@ -44,5 +44,7 @@ if __name__ == '__main__':
     m = SongMetadata(
         artist='neat band', name='james', length=100.2,
         link='https://google.com',
-        license_url='http://creativecommons.org/licenses/by/3.0/')
+        license_url='http://creativecommons.org/licenses/by/3.0/',
+        license='CC BY 3.0')
     print(m)
+    print(m['license'])

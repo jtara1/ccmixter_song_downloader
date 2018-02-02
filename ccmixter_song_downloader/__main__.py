@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import os
 from os.path import basename, dirname
 import get_media_files
+import logging
 
 try:  # python 3
     from urllib.parse import quote, unquote
@@ -36,6 +37,7 @@ class CCMixterSongDownloader:
             # and download 5 songs
 
         """
+        self.log = logging.Logger(type(self).__class__)
         # at index 0 is info of 1st song downloaded, index 0 is 2nd song, etc
         self.songs_metadata = []
 
@@ -70,7 +72,7 @@ class CCMixterSongDownloader:
         query_url = self.url_template.format(
             tags=tags, sort=sort, limit=limit, offset=offset,
             reverse='ASC' if reverse else 'DESC', license=license)
-
+        self.log.info("Query created: {}".format(query_url))
         response = requests.get(query_url)
         soup = BeautifulSoup(response.text, 'lxml')
 
@@ -104,7 +106,9 @@ class CCMixterSongDownloader:
 
             # get length of song
             song_media = get_media_files.GetMediaFiles(save_path)
-            length = song_media.files[0][1]['Audio']['duration'] / 1000
+            length = song_media.files[0][1]['Audio']['duration']
+            if length:  # length is occasionally None
+                length /= 1000
 
             # keep info of the song
             artist, song, link, lic, lic_url = self._parse_info_from_tag(tag)
