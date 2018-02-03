@@ -94,16 +94,16 @@ class CCMixterSongDownloader:
             if count >= limit:
                 break
 
-            file_name = tag['about']
+            direct_link = tag['about']
             # avoid downloading zip files
-            if file_name.endswith(('.zip', '.zip ')):
+            if direct_link.endswith(('.zip', '.zip ')):
                 # limit += 1
                 count -= 1
                 continue
 
             # convert URL text elements (%2D -> '-')
             # and make it valid file name
-            file_name = slugify(basename(unquote(file_name)))
+            file_name = slugify(basename(unquote(direct_link)))
             save_path = os.path.join(save_folder, file_name)
             self.log.info('Saving: {} as {}'
                           .format(tag['about'], save_path))
@@ -128,7 +128,7 @@ class CCMixterSongDownloader:
             artist, song, link, lic, lic_url = self._parse_info_from_tag(tag)
             metadata = SongMetadata(
                 length=length, artist=artist, name=song, link=link,
-                license_url=lic_url, license=lic)
+                license_url=lic_url, license=lic, direct_link=direct_link)
             self.songs_metadata.append(metadata)
 
         if count + 1 < limit:

@@ -3,7 +3,7 @@ import collections
 
 class SongMetadata(collections.MutableMapping):
     def __init__(self, artist='N/A', name='N/A', length=0.0, link='N/A',
-                 license_url='N/A', license='N/A'):
+                 license_url='N/A', license='N/A', direct_link='N/A'):
         """Contains metadata needed for CCMixterSongDownloader usable
         as a dictionary. All arguments are strings exception length is
         a float
@@ -14,12 +14,15 @@ class SongMetadata(collections.MutableMapping):
          'license': 'CC BY 3.0',
          'license_url': 'http://creativecommons.org/licenses/by/3.0/',
          'link': 'http://ccmixter.org/files/tobias_weber/57249',
-         'name': 'Event Horizon'}
+         'name': 'Event Horizon'
+         'direct_link': 'http://ccmixter.org/content/tobias_weber/tobias_weber_-_Event_Horizon.mp3'
+        }
 
         """
         self.dict = dict()
         self.update(artist=artist, name=name, length=length, link=link,
-                    license_url=license_url, license=license)
+                    license_url=license_url, license=license,
+                    direct_link=direct_link)
 
     def __getitem__(self, key):
         return self.dict[key]
@@ -45,6 +48,7 @@ if __name__ == '__main__':
         artist='neat band', name='james', length=100.2,
         link='https://google.com',
         license_url='http://creativecommons.org/licenses/by/3.0/',
-        license='CC BY 3.0')
+        license='CC BY 3.0',
+        direct_link='http://ccmixter.org/content/tobias_weber/tobias_weber_-_Event_Horizon.mp3')
     print(m)
     print(m['license'])
