@@ -36,7 +36,6 @@ def test_case1():
                 reverse=True, skip_previous_songs=True)
     assert len(os.listdir(downloads_folder)) >= 2  # .mp3 & history text file
     pprint([dict(metadata) for metadata in dl.songs_metadata], width=68)
-    # print(dl.songs_metadata[0])
 
 
 def test_history_log():

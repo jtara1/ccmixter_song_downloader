@@ -1,9 +1,11 @@
+import sys
 import requests
 from bs4 import BeautifulSoup
 import os
 from os.path import basename, dirname
 import get_media_files
 import logging
+from logging import Formatter, StreamHandler
 
 try:  # python 3
     from urllib.parse import quote, unquote
@@ -16,7 +18,7 @@ from ccmixter_song_downloader.metadata import SongMetadata
 
 
 class CCMixterSongDownloader:
-    # needs: tags, sort, limit, offset, reversed
+    # needs: tags, sort, limit, offset, reverse, license
     # check this for valid values http://ccmixter.org/query-api
     url_template = 'http://ccmixter.org/api/query?tags={tags}&sort={sort}&' \
                    'limit={limit}&offset={offset}&' \
@@ -37,9 +39,11 @@ class CCMixterSongDownloader:
             # and download 5 songs
 
         """
-        logging.basicConfig(format="%(asctime)s %(message)s",
-                            level=logging.DEBUG)
         self.log = logging.getLogger(__class__.__name__)
+        handler = StreamHandler(stream=sys.stdout)
+        handler.setLevel(logging.INFO)
+        handler.setFormatter(Formatter("[%(name)s] %(asctime)s %(message)s"))
+        self.log.addHandler(handler)
 
         # at index 0 is info of 1st song downloaded, index 0 is 2nd song, etc
         self.songs_metadata = []
@@ -76,7 +80,7 @@ class CCMixterSongDownloader:
         query_url = self.url_template.format(
             tags=tags, sort=sort, limit=limit, offset=offset,
             reverse='ASC' if reverse else 'DESC', license=license)
-        self.log.info("Query created: {}".format(query_url))
+        self.log.debug("Query created: {}".format(query_url))
         response = requests.get(query_url)
         soup = BeautifulSoup(response.text, 'lxml')
 
@@ -101,8 +105,8 @@ class CCMixterSongDownloader:
             # and make it valid file name
             file_name = slugify(basename(unquote(file_name)))
             save_path = os.path.join(save_folder, file_name)
-            print('[CCMixterSongDownloader] Saving: {} as {}'
-                  .format(tag['about'], save_path))
+            self.log.info('Saving: {} as {}'
+                          .format(tag['about'], save_path))
 
             # download the song
             CCMixterSongDownloader._direct_link_download(
@@ -114,6 +118,11 @@ class CCMixterSongDownloader:
             length = song_media.files[0][1]['Audio']['duration']
             if length:  # length is occasionally None
                 length /= 1000
+            else:
+                if length == '':
+                    length = '""'
+                self.log.critical('{} HAS LENGTH OF {}'
+                                  .format(save_path, length))
 
             # keep info of the song
             artist, song, link, lic, lic_url = self._parse_info_from_tag(tag)
@@ -123,8 +132,8 @@ class CCMixterSongDownloader:
             self.songs_metadata.append(metadata)
 
         if count + 1 < limit:
-            print('[CCMixterSongDownloader] WARNING: Downloaded {} songs when '
-                  'limit = {}'.format(count, limit))
+            self.log.warning('Downloaded {} songs when limit = {}'
+                             .format(count, limit))
 
         log_file_path = os.path.join(save_folder, History.log_file)
         History.history_log(log_file=log_file_path,
