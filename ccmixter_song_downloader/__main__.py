@@ -3,7 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 import os
 from os.path import basename, dirname
-import get_media_files
+from get_media_files import GetMediaFiles
 import logging
 from logging import Formatter, StreamHandler
 
@@ -42,7 +42,8 @@ class CCMixterSongDownloader:
         self.log = logging.getLogger(__class__.__name__)
         handler = StreamHandler(stream=sys.stdout)
         handler.setLevel(logging.INFO)
-        handler.setFormatter(Formatter("[%(name)s] %(asctime)s %(message)s"))
+        handler.setFormatter(Formatter("[%(name)s] %(levelname)s %(asctime)s "
+                                       "%(message)s"))
         self.log.addHandler(handler)
 
         # at index 0 is info of 1st song downloaded, index 0 is 2nd song, etc
@@ -114,8 +115,8 @@ class CCMixterSongDownloader:
                 save_path)
 
             # get length of song
-            song_media = get_media_files.GetMediaFiles(save_path)
-            length = song_media.files[0][1]['Audio']['duration']
+            files = GetMediaFiles(save_path).get_info()
+            length = files[0][1]['Audio']['duration']
             if length:  # length is occasionally None
                 length /= 1000
             else:
