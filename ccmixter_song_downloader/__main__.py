@@ -20,9 +20,11 @@ from ccmixter_song_downloader.metadata import SongMetadata
 class CCMixterSongDownloader:
     # needs: tags, sort, limit, offset, reverse, license
     # check this for valid values http://ccmixter.org/query-api
-    url_template = 'http://ccmixter.org/api/query?tags={tags}&sort={sort}&' \
+    URL_TEMPLATE = 'http://ccmixter.org/api/query?tags={tags}&sort={sort}&' \
                    'limit={limit}&offset={offset}&' \
                    'sinced=1/1/2003&ord={reverse}&lic={license}'
+    # JSON file contains metadata of each song downloaded
+    CCMIXTER_METADATA = '_ccmixter_metadata.json'
 
     def __init__(self):
         """Wrapper class for creating an HTTP query for ccmixter.org to
@@ -78,7 +80,7 @@ class CCMixterSongDownloader:
             history_data, offset = History.get_previous_download_amount(
                 tags, sort, save_folder)
 
-        query_url = self.url_template.format(
+        query_url = self.URL_TEMPLATE.format(
             tags=tags, sort=sort, limit=limit, offset=offset,
             reverse='ASC' if reverse else 'DESC', license=license)
         self.log.debug("Query created: {}".format(query_url))
@@ -132,12 +134,19 @@ class CCMixterSongDownloader:
                 license_url=lic_url, license=lic, direct_link=direct_link)
             self.songs_metadata.append(metadata)
 
+            # update metadata in file with new song downloaded
+            History.history_log(
+                wdir=save_folder, log_file=self.CCMIXTER_METADATA,
+                mode='update',
+                write_data=self._create_metadata_serialization_data(
+                    file_name, metadata))
+
         if count + 1 < limit:
             self.log.warning('Downloaded {} songs when limit = {}'
                              .format(count, limit))
 
-        log_file_path = os.path.join(save_folder, History.log_file)
-        History.history_log(log_file=log_file_path,
+        History.history_log(wdir=save_folder,
+                            log_file=History.log_file,
                             mode='write',
                             write_data=self._create_history_log_info(
                                 history_data, tags, sort, limit))
@@ -201,6 +210,10 @@ class CCMixterSongDownloader:
         url = url[:-1].split('/')
         number, cc_license = url[-1], url[-2]
         return "CC {} {}".format(cc_license.upper(), number)
+
+    @staticmethod
+    def _create_metadata_serialization_data(file_name, song_metadata):
+        return {file_name: dict(song_metadata)}
 
 
 if __name__ == '__main__':

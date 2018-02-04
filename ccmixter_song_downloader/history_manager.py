@@ -25,15 +25,34 @@ class History:
         mode_dict = {
             'read': 'r',
             'write': 'w',
-            'append': 'a'
+            'append': 'a',
+            'update': 'r+',
         }
         if mode in mode_dict:
             log_file_path = os.path.join(wdir, log_file)
             History.create_directories_if_needed(log_file_path)
+            if mode == 'update':
+                History.create_file_if_not_created(log_file_path, {})
 
             with open(log_file_path, mode_dict[mode]) as f:
+                # read from file as JSON and return JSON
                 if mode == 'read':
                     return json.loads(f.read())
+                # read data then update data with new write_data then save JSON
+                elif mode == 'update':
+                    data = json.loads(f.read())
+                    # only supporting updating if both are dictionaries
+                    if isinstance(data, dict) and isinstance(write_data, dict):
+                        data.update(write_data)
+                        f.seek(0)  # seek to beginning to overwrite data
+                        f.write(json.dumps(data))
+                    else:
+                        logging.critical(
+                            "[ccmixter_song_downloader.history_manager."
+                            "History.history_log] "
+                            "Does not support updating non-dict JSON")
+                    return data
+                # write or append modes
                 else:
                     f.write(json.dumps(write_data))
                     return write_data
@@ -58,6 +77,8 @@ class History:
         Note: this has been modified to work with ccmixter_song_downloader
         """
         no_history = False
+        log_data = None
+        last_id = None
         try:
             # first: we try to open the log_file
             log_data = History.history_log(dir, History.log_file, 'read')
@@ -122,3 +143,12 @@ class History:
             path = os.path.dirname(path)
         if not os.path.isdir(path):
             os.makedirs(path)
+
+    @staticmethod
+    def create_file_if_not_created(file_path, write_data={}):
+        try:
+            with open(file_path, 'r'):
+                pass
+        except (FileNotFoundError, FileExistsError):
+            with open(file_path, 'w') as f:
+                f.write(json.dumps(write_data))
