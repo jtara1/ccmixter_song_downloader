@@ -48,9 +48,6 @@ class CCMixterSongDownloader:
                                        "%(message)s"))
         self.log.addHandler(handler)
 
-        # at index 0 is info of 1st song downloaded, index 0 is 2nd song, etc
-        self.songs_metadata = []
-
     def download(self, save_folder, tags='classical', sort='date', limit=1,
                  reverse=False, license='by', skip_previous_songs=True):
         """Downloads songs from ccMixter and saves them. All arguments
@@ -68,7 +65,10 @@ class CCMixterSongDownloader:
         :param skip_previous_songs: <bool> if true, checks for previous \n
             queries made and skips the amount downloaded (as offset in url \n
             query filter).
-        :return:
+        :returns: <dict> metadata following JSON format in the \n
+            schema of: {"artist_-_song_name.mp3": {"artist": "Johnny", ... }}\n
+            where each key is the song file name and it's value is the JSON \n
+            formatted SongMetadata
         """
         # location of music files downloaded
         save_folder = os.path.abspath(save_folder)
@@ -132,7 +132,6 @@ class CCMixterSongDownloader:
             metadata = SongMetadata(
                 length=length, artist=artist, name=song, link=link,
                 license_url=lic_url, license=lic, direct_link=direct_link)
-            self.songs_metadata.append(metadata)
 
             # update metadata in file with new song downloaded
             History.history_log(
@@ -145,11 +144,14 @@ class CCMixterSongDownloader:
             self.log.warning('Downloaded {} songs when limit = {}'
                              .format(count, limit))
 
-        History.history_log(wdir=save_folder,
-                            log_file=History.log_file,
-                            mode='write',
-                            write_data=self._create_history_log_info(
-                                history_data, tags, sort, limit))
+        History.history_log(
+            wdir=save_folder, log_file=History.log_file, mode='write',
+            write_data=self._create_history_log_info(
+                history_data, tags, sort, limit))
+
+        return History.history_log(
+                wdir=save_folder, log_file=self.CCMIXTER_METADATA,
+                mode='read')
 
     def _parse_info_from_tag(self, tag):
         """Extracts info about the song from the HTML tag (with
