@@ -47,6 +47,9 @@ class CCMixterSongDownloader:
         handler.setFormatter(Formatter("[%(name)s] %(levelname)s %(asctime)s "
                                        "%(message)s"))
         self.log.addHandler(handler)
+        # contains all metadata of each song downloaded through download method
+        # using this object instance
+        self.songs_metadata = {}
 
     def download(self, save_folder, tags='classical', sort='date', limit=1,
                  reverse=False, license='by', skip_previous_songs=True):
@@ -65,7 +68,8 @@ class CCMixterSongDownloader:
         :param skip_previous_songs: <bool> if true, checks for previous \n
             queries made and skips the amount downloaded (as offset in url \n
             query filter).
-        :returns: <dict> metadata following JSON format in the \n
+        :returns: <dict> metadata of the songs just downloaded \n
+            following JSON format in the \n
             schema of: {"artist_-_song_name.mp3": {"artist": "Johnny", ... }}\n
             where each key is the song file name and it's value is the JSON \n
             formatted SongMetadata
@@ -149,9 +153,11 @@ class CCMixterSongDownloader:
             write_data=self._create_history_log_info(
                 history_data, tags, sort, limit))
 
-        return History.history_log(
-                wdir=save_folder, log_file=self.CCMIXTER_METADATA,
-                mode='read')
+        new_metadata = History.history_log(
+            wdir=save_folder, log_file=self.CCMIXTER_METADATA,
+            mode='read')
+        self.songs_metadata.update(new_metadata)
+        return new_metadata
 
     def _parse_info_from_tag(self, tag):
         """Extracts info about the song from the HTML tag (with
