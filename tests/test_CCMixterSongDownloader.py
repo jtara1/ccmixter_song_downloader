@@ -1,9 +1,10 @@
-from os.path import join
+from os.path import join, dirname
 import os
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from ccmixter_song_downloader.__main__ import CCMixterSongDownloader
 from ccmixter_song_downloader.history_manager import History
+from ccmixter_song_downloader.metadata import SongMetadata
 
 import json
 from pprint import pprint
@@ -45,6 +46,36 @@ def test_history_log():
         data = json.load(f)
     assert(data == {'': {'date': {'downloads': 3}},
                     'rap': {'date': {'downloads': 1}}})
+
+
+def test_metadata():
+    expected = {
+        "stab_-_Backtrace.mp3":
+        {
+            "length": 283.689,
+            "direct_link":
+                "http://ccmixter.org/content/stab/stab_%2D_Backtrace.mp3 ",
+            "name": "Backtrace",
+            "license": "CC BY 2.5",
+            "license_url": "http://creativecommons.org/licenses/by/2.5/",
+            "artist": "Stab",
+            "link": "http://ccmixter.org/files/stab/3067"
+        },
+        "melquiades_-_Brahms_Intermezzo_116.4.mp3":
+        {
+            "length": 280.084,
+            "direct_link":
+                "http://ccmixter.org/content/melquiades/melquiades_%2D_Brahms_Intermezzo_116.4.mp3 ",
+            "name": "Brahms Intermezzo 116.4",
+            "license": "CC BY 2.5",
+            "artist": "melquiades",
+            "license_url": "http://creativecommons.org/licenses/by/2.5/",
+            "link": "http://ccmixter.org/files/melquiades/2995"
+        }
+    }
+    data = CCMixterSongDownloader.deserialize(dirname(__file__))
+    pprint(data)
+    assert(data == expected)
 
 
 if __name__ == '__main__':

@@ -1,8 +1,9 @@
+import json
 import sys
 import requests
 from bs4 import BeautifulSoup
 import os
-from os.path import basename, dirname
+from os.path import basename, dirname, join, abspath
 from get_media_files import GetMediaFiles
 import logging
 from logging import Formatter, StreamHandler
@@ -222,6 +223,18 @@ class CCMixterSongDownloader:
     @staticmethod
     def _create_metadata_serialization_data(file_name, song_metadata):
         return {file_name: dict(song_metadata)}
+
+    @staticmethod
+    def deserialize(folder):
+        """Load JSON metadata of song(s) saved in folder
+        :param folder: <str> directory in which the CCMIXTER_METADATA \n
+            was saved to (same directory the songs were saved to)
+        """
+        folder = abspath(folder)
+        fp = join(folder, CCMixterSongDownloader.CCMIXTER_METADATA)
+        with open(fp, 'r') as f:
+            json_data = json.load(f)
+        return json_data
 
 
 if __name__ == '__main__':
