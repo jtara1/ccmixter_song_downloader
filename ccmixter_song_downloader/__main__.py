@@ -25,7 +25,7 @@ class CCMixterSongDownloader:
                    'limit={limit}&offset={offset}&' \
                    'sinced=1/1/2003&ord={reverse}&lic={license}'
     # JSON file contains metadata of each song downloaded
-    CCMIXTER_METADATA = '_ccmixter_metadata.json'
+    METADATA_FILE = '_ccmixter_metadata.json'
 
     def __init__(self):
         """Wrapper class for creating an HTTP query for ccmixter.org to
@@ -140,7 +140,7 @@ class CCMixterSongDownloader:
 
             # update metadata in file with new song downloaded
             History.history_log(
-                wdir=save_folder, log_file=self.CCMIXTER_METADATA,
+                wdir=save_folder, log_file=self.METADATA_FILE,
                 mode='update',
                 write_data=self._create_metadata_serialization_data(
                     file_name, metadata))
@@ -158,7 +158,7 @@ class CCMixterSongDownloader:
 
         try:
             new_metadata = History.history_log(
-                wdir=save_folder, log_file=self.CCMIXTER_METADATA,
+                wdir=save_folder, log_file=self.METADATA_FILE,
                 mode='read')
         except (FileExistsError, FileNotFoundError):
             # no songs found with query can cause this
@@ -238,7 +238,7 @@ class CCMixterSongDownloader:
             was saved to (same directory the songs were saved to)
         """
         folder = abspath(folder)
-        fp = join(folder, CCMixterSongDownloader.CCMIXTER_METADATA)
+        fp = join(folder, CCMixterSongDownloader.METADATA_FILE)
         with open(fp, 'r') as f:
             json_data = json.load(f)
         return json_data
