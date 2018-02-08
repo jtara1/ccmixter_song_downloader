@@ -44,7 +44,7 @@ class CCMixterSongDownloader:
         """
         self.log = logging.getLogger(__class__.__name__)
         handler = StreamHandler(stream=sys.stdout)
-        handler.setLevel(logging.INFO)
+        handler.setLevel(logging.DEBUG)
         handler.setFormatter(Formatter("[%(name)s] %(levelname)s %(asctime)s "
                                        "%(message)s"))
         self.log.addHandler(handler)
