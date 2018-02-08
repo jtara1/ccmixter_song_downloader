@@ -145,18 +145,25 @@ class CCMixterSongDownloader:
                 write_data=self._create_metadata_serialization_data(
                     file_name, metadata))
 
-        if count + 1 < limit:
-            self.log.warning('Downloaded {} songs when limit = {}'
-                             .format(count, limit))
+        if count <= 0:
+            self.log.error('No songs found with {} query'.format(query_url))
+        elif count + 1 < limit:
+            self.log.error('Downloaded {} songs when limit = {}'
+                           .format(count, limit))
 
         History.history_log(
             wdir=save_folder, log_file=History.log_file, mode='write',
             write_data=self._create_history_log_info(
                 history_data, tags, sort, limit))
 
-        new_metadata = History.history_log(
-            wdir=save_folder, log_file=self.CCMIXTER_METADATA,
-            mode='read')
+        try:
+            new_metadata = History.history_log(
+                wdir=save_folder, log_file=self.CCMIXTER_METADATA,
+                mode='read')
+        except (FileExistsError, FileNotFoundError):
+            # no songs found with query can cause this
+            new_metadata = {}
+
         self.songs_metadata.update(new_metadata)
         return new_metadata
 
