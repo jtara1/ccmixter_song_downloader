@@ -1,12 +1,11 @@
 import json
-import sys
 import requests
 from bs4 import BeautifulSoup
 import os
 from os.path import basename, dirname, join, abspath
 from get_media_files import GetMediaFiles
 import logging
-from logging import Formatter, StreamHandler
+from logging import Formatter
 
 try:  # python 3
     from urllib.parse import quote, unquote
@@ -42,15 +41,29 @@ class CCMixterSongDownloader:
             # and download 5 songs
 
         """
-        self.log = logging.getLogger(__class__.__name__)
-        handler = StreamHandler(stream=sys.stdout)
-        handler.setLevel(logging.DEBUG)
-        handler.setFormatter(Formatter("[%(name)s] %(levelname)s %(asctime)s "
-                                       "%(message)s"))
-        self.log.addHandler(handler)
+        self._setup_logging()
         # contains all metadata of each song downloaded through download method
         # using this object instance
         self.songs_metadata = {}
+
+    def _setup_logging(self):
+        self.log = logging.getLogger(CCMixterSongDownloader.__name__)
+        self.log.setLevel(logging.DEBUG)
+        formatter = Formatter(
+            "[%(name)s] - %(levelname)s - %(asctime)s -\n\t%(message)s")
+
+        # stream handler
+        sh = logging.StreamHandler()  # std.err
+        sh.setLevel(logging.WARNING)
+        sh.setFormatter(formatter)
+
+        # file handler
+        fh = logging.FileHandler('ccmixter.log')
+        fh.setLevel(logging.DEBUG)
+        fh.setFormatter(formatter)
+
+        self.log.addHandler(sh)
+        self.log.addHandler(fh)
 
     def download(self, save_folder, tags='classical', sort='date', limit=1,
                  reverse=False, license='by', skip_previous_songs=True):
