@@ -90,6 +90,7 @@ class CCMixterSongDownloader:
         """
         # location of music files downloaded
         save_folder = os.path.abspath(save_folder)
+        self.log.info('### CCMixterSongDownloader.download begin ###')
 
         if not skip_previous_songs:
             history_data = {}
@@ -98,27 +99,35 @@ class CCMixterSongDownloader:
             history_data, offset = History.get_previous_download_amount(
                 tags, sort, save_folder)
 
+        self.log.debug('history_data = {}'.format(history_data))
+        self.log.debug('Offset for this query: {}'.format(offset))
+
         query_url = self.URL_TEMPLATE.format(
             tags=tags, sort=sort, limit=limit, offset=offset,
             reverse='ASC' if reverse else 'DESC', license=license)
         self.log.debug("Query created: {}".format(query_url))
         response = requests.get(query_url)
+        self.log.debug("Response to query: {}".format(response))
         soup = BeautifulSoup(response.text, 'lxml')
 
         count = 0
-        # iterate over the HTML <div> tag that contains the direct link to .mp3
-        for count, tag in enumerate(
-                soup.find_all('div', attrs={'class': 'upload_info'}),
-                start=0):
+        song_tags = soup.find_all('div', attrs={'class': 'upload_info'})
+        self.log.debug('HTML song tags found: {}'.format(len(song_tags)))
 
+        # iterate over the HTML <div> tag that contains the direct link to .mp3
+        for count, tag in enumerate(song_tags, start=0):
             # we've downloaded enough songs to reach the limit
             if count >= limit:
+                self.log.debug('Dl limit reached, count = {}, limit = {}'
+                               .format(count, limit))
                 break
 
             direct_link = tag['about']
             # avoid downloading zip files
             if direct_link.endswith(('.zip', '.zip ')):
                 # limit += 1
+                self.log.debug('Zip file encountered, skipping {}'
+                               .format(direct_link))
                 count -= 1
                 continue
 
