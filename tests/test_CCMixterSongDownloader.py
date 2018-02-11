@@ -34,7 +34,7 @@ def test_case1():
     data = dl.download(save_folder=downloads_folder, tags='', limit=3,
                        reverse=True, skip_previous_songs=True)
     data2 = dl.download(save_folder=downloads_folder, tags='female_vocals',
-                        limit=1,
+                        limit=2,
                         reverse=True, skip_previous_songs=True)
     data.update(data2)
     assert len(os.listdir(downloads_folder)) >= 2  # .mp3 & history text file

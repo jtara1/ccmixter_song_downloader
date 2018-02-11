@@ -98,6 +98,8 @@ class CCMixterSongDownloader:
         else:
             history_data, offset = History.get_previous_download_amount(
                 tags, sort, save_folder)
+            if offset == '':
+                offset = 0
 
         self.log.debug('history_data = {}'.format(history_data))
         self.log.debug('Offset for this query: {}'.format(offset))
@@ -110,25 +112,23 @@ class CCMixterSongDownloader:
         self.log.debug("Response to query: {}".format(response))
         soup = BeautifulSoup(response.text, 'lxml')
 
-        count = 0
+        downloaded = 0  # amount of songs downloaded
         song_tags = soup.find_all('div', attrs={'class': 'upload_info'})
         self.log.debug('HTML song tags found: {}'.format(len(song_tags)))
 
         # iterate over the HTML <div> tag that contains the direct link to .mp3
         for count, tag in enumerate(song_tags, start=0):
             # we've downloaded enough songs to reach the limit
-            if count >= limit:
-                self.log.debug('Dl limit reached, count = {}, limit = {}'
-                               .format(count, limit))
+            if downloaded >= limit:
+                self.log.debug('Dl limit reached, downloaded = {}, limit = {}'
+                               .format(downloaded, limit))
                 break
 
             direct_link = tag['about']
             # avoid downloading zip files
             if direct_link.endswith(('.zip', '.zip ')):
-                # limit += 1
                 self.log.debug('Zip file encountered, skipping {}'
                                .format(direct_link))
-                count -= 1
                 continue
 
             # convert URL text elements (%2D -> '-')
@@ -167,16 +167,18 @@ class CCMixterSongDownloader:
                 write_data=self._create_metadata_serialization_data(
                     file_name, metadata))
 
-        if count <= 0:
+            downloaded += 1
+
+        if downloaded <= 0:
             self.log.error('No songs found with {} query'.format(query_url))
-        elif count + 1 < limit:
-            self.log.error('Downloaded {} songs when limit = {}'
-                           .format(count, limit))
+        elif downloaded < limit:
+            self.log.warning('Downloaded {} songs when limit = {}'
+                             .format(downloaded, limit))
 
         History.history_log(
             wdir=save_folder, log_file=History.log_file, mode='write',
             write_data=self._create_history_log_info(
-                history_data, tags, sort, limit))
+                history_data, tags, sort, offset + downloaded))
 
         try:
             new_metadata = History.history_log(
